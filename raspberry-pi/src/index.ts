@@ -39,10 +39,16 @@ peer.on("signal", (data:RTCSessionDescriptionInit | RTCIceCandidateInit) => {
 
 const aplay = spawn("aplay", ["-f", "S16_LE", "-r", "48000", "-c", "1"]);
 
+let recording: ReturnType<typeof record.record> | null = null;
+
 peer.on("connect", () => {
   console.log("peer connection established");
-  const mic = record.start({ sampleRate: 48000, channels: 1, thresholdStart: 0 });
-  mic.on("data", (chunk: Buffer) => peer.send(chunk));
+  recording = record.record({
+    sampleRate: 48000,
+    channels: 1,
+    thresholdStart: 0,
+  });
+  recording.stream().on("data", (chunk: Buffer) => peer.send(chunk));
 });
 
 peer.on("data", (data: Buffer) => {
@@ -51,5 +57,6 @@ peer.on("data", (data: Buffer) => {
 
 peer.on("close", () => {
   aplay.stdin.end();
+  recording?.stop();
 });
 

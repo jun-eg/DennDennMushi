@@ -1,5 +1,6 @@
 declare module "node-record-lpcm16" {
-  import { EventEmitter } from "events";
+  import { Readable } from "stream";
+
   interface RecordOptions {
     sampleRate?: number;
     channels?: number;
@@ -12,10 +13,19 @@ declare module "node-record-lpcm16" {
     audioType?: string;
     verbose?: boolean;
   }
-  interface Record {
-    start(options?: RecordOptions): EventEmitter;
+
+  interface Recording {
     stop(): void;
+    pause(): void;
+    resume(): void;
+    isPaused(): boolean;
+    stream(): Readable;
   }
-  const record: Record;
-  export = record;
+
+  interface Recorder {
+    record(options?: RecordOptions): Recording;
+  }
+
+  const recorder: Recorder;
+  export = recorder;
 }
